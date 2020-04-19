@@ -1,0 +1,354 @@
+package me.tykey.tsystem.tsystem;
+
+import me.tykey.tsystem.tsystem.Commands.HelpCommand;
+import me.tykey.tsystem.tsystem.Commands.MainCommand;
+import me.tykey.tsystem.tsystem.Commands.OpenGuiCommand;
+import me.tykey.tsystem.tsystem.Commands.ReloadCommand;
+import me.tykey.tsystem.tsystem.Events.InventoryClick;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.ArrayList;
+
+public final class TSystem extends JavaPlugin {
+    public boolean canjoin;
+
+    @Override
+    public void onEnable() {
+        getServer().getPluginManager().registerEvents(new InventoryClick(this),this);
+        getCommand("port").setExecutor(new MainCommand(this));
+        getCommand("event").setExecutor(new OpenGuiCommand(this));
+        getCommand("ehelp").setExecutor(new HelpCommand());
+        getCommand("ereload").setExecutor(new ReloadCommand(this));
+        getConfig().options().copyDefaults();
+        saveDefaultConfig();
+
+    }
+
+
+    public void opengui(Player p) {
+
+        Inventory gui = Bukkit.createInventory(null,9, ChatColor.BLUE + "TSystem by TKey");
+        ItemStack loc = new ItemStack(Material.COMPASS);
+        ItemMeta loc_meta = loc.getItemMeta();
+        loc_meta.setDisplayName(ChatColor.RED + "Location & Saver");
+        ArrayList<String>loc_lore = new ArrayList<>();
+        loc_lore.add(ChatColor.GOLD + "If you want save event location click to me!");
+        loc_meta.setLore(loc_lore);
+        loc.setItemMeta(loc_meta);
+
+        if(canjoin == false) {
+            ItemStack bc = new ItemStack(Material.RED_SHULKER_BOX);
+            ItemMeta bc_meta = bc.getItemMeta();
+            bc_meta.setDisplayName(ChatColor.RED + "Event & Closer");
+            ArrayList<String> bc_lore = new ArrayList<>();
+            bc_lore.add(ChatColor.GOLD + "If you want close event port click me!");
+            bc_meta.setLore(bc_lore);
+            bc.setItemMeta(bc_meta);
+            gui.setItem(8,bc);
+        }
+
+        if(canjoin) {
+
+            ItemStack open = new ItemStack(Material.GREEN_SHULKER_BOX);
+            ItemMeta open_meta = open.getItemMeta();
+            open_meta.setDisplayName(ChatColor.GREEN + "Event & Opener");
+            ArrayList<String> open_lore = new ArrayList<>();
+            open_lore.add(ChatColor.GOLD + "If you want open event port click me!");
+            open_meta.setLore(open_lore);
+            open.setItemMeta(open_meta);
+            gui.setItem(8,open);
+        }
+        gui.setItem(0,loc);
+        // gui.setItem(1,kill);
+        p.openInventory(gui);
+    }
+}
+
+
+                                           //HELP COMMAND//
+                                           
+                                           
+package me.tykey.tsystem.tsystem.Commands;
+
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+public class HelpCommand implements CommandExecutor {
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if(sender instanceof Player) {
+            Player p = (Player) sender;
+
+            p.sendMessage(ChatColor.GRAY + " ===================== ");
+            p.sendMessage(ChatColor.GRAY + "  ");
+            p.sendMessage(ChatColor.GOLD + "   Author : TKey");
+            p.sendMessage(ChatColor.GRAY + "  ");
+            p.sendMessage(ChatColor.GOLD + "    </event> (Otevre základní menu) ");
+            p.sendMessage(ChatColor.GOLD + "    </port> (Umozni hraci teleport na event!) ");
+            p.sendMessage(ChatColor.GRAY + "  Plugin version : 1.0 ");
+            p.sendMessage(ChatColor.GRAY + " ===================== ");
+            return true;
+
+
+        }
+
+
+        return false;
+    }
+}
+
+                                //OPENGUI COMMAND//
+                                
+                                package me.tykey.tsystem.tsystem.Commands;
+
+import me.tykey.tsystem.tsystem.TSystem;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+public class OpenGuiCommand implements CommandExecutor {
+
+    TSystem pl;
+
+    public OpenGuiCommand(TSystem pl) {
+        this.pl = pl;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if(sender instanceof Player) {
+            Player p = (Player) sender;
+            if(p.hasPermission("tsystem.admin")) {
+
+                pl.opengui(p);
+            } else {
+                p.sendMessage(ChatColor.RED + "You dont have permission to this command!");
+
+            }
+
+
+
+
+        }
+
+
+        return true;
+    }
+
+}
+                          //RELOAD COMMAND//
+                          
+                          package me.tykey.tsystem.tsystem.Commands;
+
+import me.tykey.tsystem.tsystem.TSystem;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+public class ReloadCommand implements CommandExecutor {
+
+    TSystem pl;
+
+    public ReloadCommand(TSystem pl) {
+        this.pl = pl;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        Player p =(Player) sender;
+
+
+        if(p.isOp()) {
+            pl.reloadConfig();
+            p.sendMessage(ChatColor.GOLD + "Config reloadovan!");
+        } else {
+            p.sendMessage(ChatColor.RED + "You dont have permission to do this!");
+
+        }
+
+
+
+        return false;
+    }
+}
+                          //MAIN COMMAND//
+                          package me.tykey.tsystem.tsystem.Commands;
+
+import me.tykey.tsystem.tsystem.Events.InventoryClick;
+import me.tykey.tsystem.tsystem.TSystem;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.ArrayList;
+
+public class MainCommand implements CommandExecutor {
+
+    TSystem pl;
+
+
+    public MainCommand(InventoryClick plugin) {
+        this.plugin = plugin;
+    }
+
+    InventoryClick plugin;
+
+
+    public MainCommand(TSystem pl) {
+        this.pl = pl;
+    }
+
+    public ArrayList<String> inevent = new ArrayList<String>();
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if(sender instanceof Player) {
+            Player p = (Player) sender;
+
+
+                    if(pl.canjoin == false) {
+
+                        if(pl.getConfig().isConfigurationSection("eventlocations." + p.getName())) {
+                            World world = Bukkit.getWorld(pl.getConfig().getString("eventlocations." + p.getName() + ".World"));
+                            float x = (float) pl.getConfig().getDouble("eventlocations." + p.getName() + ".x");
+                            float y = (float) pl.getConfig().getDouble("eventlocations." + p.getName() + ".y");
+                            float z = (float) pl.getConfig().getDouble("eventlocations." + p.getName() + ".z");
+
+                            p.teleport(new Location(world,x,y,z));
+                            inevent.add(p.getName());
+
+                        return true;
+
+
+                        }
+
+
+
+                    } else {
+                        p.sendMessage(ChatColor.RED + "Event port je vypnut!");
+
+                    }
+            }
+
+    return false;
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+                                                          //EVENTS//
+                                                          
+                                                          
+                                                          package me.tykey.tsystem.tsystem.Events;
+
+import me.tykey.tsystem.tsystem.Commands.MainCommand;
+import me.tykey.tsystem.tsystem.TSystem;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
+
+public class InventoryClick implements Listener {
+
+
+    MainCommand plugin;
+
+    public InventoryClick(MainCommand plugin) {
+        this.plugin = plugin;
+    }
+
+    TSystem pl;
+
+
+    public InventoryClick(TSystem pl) {
+        this.pl = pl;
+    }
+
+    @EventHandler
+    public void Click(InventoryClickEvent e) {
+        Player p = (Player) e.getWhoClicked();
+        String gui = ChatColor.BLUE + "TSystem by TKey";
+        if (e.getClickedInventory().getTitle().equalsIgnoreCase(gui)) {
+
+            switch (e.getCurrentItem().getType()) {
+
+                case COMPASS:
+                    Location l = p.getLocation();
+                    pl.getConfig().createSection("eventlocations." + p.getName());
+                    pl.getConfig().set("eventlocations." + p.getName() + ".World", l.getWorld().getName());
+                    pl.getConfig().set("eventlocations." + p.getName() + ".x", l.getX());
+                    pl.getConfig().set("eventlocations." + p.getName() + ".y", l.getY());
+                    pl.getConfig().set("eventlocations." + p.getName() + ".z", l.getZ());
+                    pl.saveConfig();
+                    p.sendMessage(ChatColor.GOLD + "Event lokace ulozena!");
+                    p.closeInventory();
+                    break;
+                case RED_SHULKER_BOX:
+
+                    if (pl.canjoin == false) {
+                        pl.canjoin = true;
+                        p.sendMessage(ChatColor.RED + "Port byl uzavren!");
+                        p.closeInventory();
+                        break;
+                    }
+
+                case GREEN_SHULKER_BOX:
+
+                    if (pl.canjoin) {
+                        pl.canjoin = false;
+                        p.sendMessage(ChatColor.GREEN + "Port byl otevren!");
+                        p.closeInventory();
+                        break;
+                    }
+               /*case REDSTONE:
+                   for(String pley: plugin.inevent) {
+                       Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "spawn" + pley);
+                       p.closeInventory();
+                       */
+
+
+            }
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
